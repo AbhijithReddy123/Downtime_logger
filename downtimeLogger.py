@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import os
+import smtplib
+from email.message import EmailMessage
 
 # Page setup
 st.set_page_config(layout="centered")
@@ -72,7 +74,6 @@ if st.session_state.log:
                 "Total Downtime (min)": [df_log["Duration (min)"].sum()]
             })
 
-            # Sanitize file components to prevent naming errors
             safe_tank = st.session_state.tank.replace(" ", "_").replace("/", "_").replace(":", "-").strip()
             safe_order = st.session_state.work_order.replace(" ", "_").replace("/", "_").replace(":", "-").strip()
             safe_date = shift_date.strftime("%Y-%m-%d")
@@ -84,5 +85,31 @@ if st.session_state.log:
 
             st.success(f"✅ Excel file saved as **{filename}**")
             st.write(f"📁 File location: `{os.path.abspath(filename)}`")
+
+            # OPTIONAL: Email the file to Abhijith
+            try:
+                sender_email = "yourgmail@gmail.com"
+                receiver_email = "abhijithreddykonda@gmail.com"
+                gmail_password = "your_app_password"
+
+                msg = EmailMessage()
+                msg["Subject"] = "Downtime Log Summary"
+                msg["From"] = sender_email
+                msg["To"] = receiver_email
+                msg.set_content(f"Here is your downtime summary file: {filename}")
+
+                with open(filename, "rb") as file:
+                    msg.add_attachment(file.read(), maintype="application",
+                                       subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                       filename=filename)
+
+                with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+                    smtp.login(sender_email, gmail_password)
+                    smtp.send_message(msg)
+
+                st.success("📧 File emailed to abhijithreddykonda@gmail.com!")
+            except Exception as e:
+                st.warning("⚠️ Email failed to send. Check your credentials or app password.")
+                st.text(f"Error: {e}")
         else:
             st.warning("⚠️ No data to export — your log is empty.")
