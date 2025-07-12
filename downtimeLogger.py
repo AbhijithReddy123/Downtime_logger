@@ -87,7 +87,7 @@ if st.session_state.log:
 
             # Email the file
             try:
-                sender_email = "yourgmail@gmail.com"
+                sender_email = "abhijithreddykonda@gmail.com"
                 receiver_email = "abhijithreddykonda@gmail.com"
                 gmail_password = "aowlxqauppjlkvlq"  # Use an app-specific password
 
