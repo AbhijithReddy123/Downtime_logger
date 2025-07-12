@@ -74,23 +74,28 @@ if st.session_state.log:
                 "Total Downtime (min)": [df_log["Duration (min)"].sum()]
             })
 
+            # File naming
             safe_tank = st.session_state.tank.replace(" ", "_").replace("/", "_").replace(":", "-").strip()
             safe_order = st.session_state.work_order.replace(" ", "_").replace("/", "_").replace(":", "-").strip()
             safe_date = shift_date.strftime("%Y-%m-%d")
             filename = f"Downtime_{safe_tank}_{safe_order}_{safe_date}.xlsx"
 
-            with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+            # Save to Downloads folder
+            downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+            file_path = os.path.join(downloads_path, filename)
+
+            with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
                 summary.to_excel(writer, sheet_name="Shift Summary", index=False)
                 df_log.to_excel(writer, sheet_name="Downtime Entries", index=False)
 
-            st.success(f"✅ Excel file saved as **{filename}**")
-            st.write(f"📁 File location: `{os.path.abspath(filename)}`")
+            st.success(f"✅ Excel file saved in Downloads as **{filename}**")
+            st.write(f"📁 File location: `{file_path}`")
 
-            # OPTIONAL: Email the file to Abhijith
+            # OPTIONAL: Email the file
             try:
                 sender_email = "yourgmail@gmail.com"
                 receiver_email = "abhijithreddykonda@gmail.com"
-                gmail_password = "your_app_password"
+                gmail_password = "your_app_password"  # Use app password if 2FA is enabled
 
                 msg = EmailMessage()
                 msg["Subject"] = "Downtime Log Summary"
@@ -98,7 +103,7 @@ if st.session_state.log:
                 msg["To"] = receiver_email
                 msg.set_content(f"Here is your downtime summary file: {filename}")
 
-                with open(filename, "rb") as file:
+                with open(file_path, "rb") as file:
                     msg.add_attachment(file.read(), maintype="application",
                                        subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                        filename=filename)
