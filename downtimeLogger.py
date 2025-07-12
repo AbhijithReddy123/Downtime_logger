@@ -54,14 +54,14 @@ if st.session_state.log:
         st.session_state.log.clear()
         st.success("All downtime entries cleared!")
 
-# Export section
+# Export and Email section
 if st.session_state.log:
-    st.subheader("📤 Export Shift Summary")
+    st.subheader("📤 Export Shift Summary & Email")
     shift_date = st.date_input("Shift Date")
     start_time = st.text_input("Start Time (e.g. 21:00)")
     end_time = st.text_input("End Time (e.g. 05:00)")
 
-    if st.button("📁 Save to Excel"):
+    if st.button("📧 Generate & Send Excel via Email"):
         df_log = pd.DataFrame(st.session_state.log)
 
         if not df_log.empty:
@@ -79,23 +79,17 @@ if st.session_state.log:
             safe_order = st.session_state.work_order.replace(" ", "_").replace("/", "_").replace(":", "-").strip()
             safe_date = shift_date.strftime("%Y-%m-%d")
             filename = f"Downtime_{safe_tank}_{safe_order}_{safe_date}.xlsx"
-
-            # Save to Downloads folder
-            downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
-            file_path = os.path.join(downloads_path, filename)
+            file_path = os.path.join(".", filename)  # Save to current directory
 
             with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
                 summary.to_excel(writer, sheet_name="Shift Summary", index=False)
                 df_log.to_excel(writer, sheet_name="Downtime Entries", index=False)
 
-            st.success(f"✅ Excel file saved in Downloads as **{filename}**")
-            st.write(f"📁 File location: `{file_path}`")
-
-            # OPTIONAL: Email the file
+            # Email the file
             try:
                 sender_email = "yourgmail@gmail.com"
                 receiver_email = "abhijithreddykonda@gmail.com"
-                gmail_password = "your_app_password"  # Use app password if 2FA is enabled
+                gmail_password = "your_app_password"  # Use an app-specific password
 
                 msg = EmailMessage()
                 msg["Subject"] = "Downtime Log Summary"
@@ -112,9 +106,9 @@ if st.session_state.log:
                     smtp.login(sender_email, gmail_password)
                     smtp.send_message(msg)
 
-                st.success("📧 File emailed to abhijithreddykonda@gmail.com!")
+                st.success("📧 Excel file successfully emailed to abhijithreddykonda@gmail.com!")
             except Exception as e:
-                st.warning("⚠️ Email failed to send. Check your credentials or app password.")
+                st.warning("⚠️ Email failed to send. Please verify your credentials or enable app password.")
                 st.text(f"Error: {e}")
         else:
             st.warning("⚠️ No data to export — your log is empty.")
