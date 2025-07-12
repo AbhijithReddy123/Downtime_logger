@@ -89,7 +89,7 @@ if st.session_state.log:
             try:
                 sender_email = "yourgmail@gmail.com"
                 receiver_email = "abhijithreddykonda@gmail.com"
-                gmail_password = "your_app_password"  # Use an app-specific password
+                gmail_password = "aowlxqauppjlkvlq"  # Use an app-specific password
 
                 msg = EmailMessage()
                 msg["Subject"] = "Downtime Log Summary"
